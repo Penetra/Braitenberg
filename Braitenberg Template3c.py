@@ -10,6 +10,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 		self.vehicle = None
 		myBraitenbergControl.init( self )
 	
+	
 	def init( self ):
 		self.vehicle = breve.createInstances( breve.BraitenbergVehicle, 1 )
 		self.watch( self.vehicle )
