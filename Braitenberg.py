@@ -387,8 +387,16 @@ class BraitenbergLightSensor( breve.Link ):
 		
 	def setActivationType(self, type):
 		self.activationType = type
-		
+	
+	def setUpperX(self, upper):
+		self.upperX = upper
+	
+	def setLowerX(self, lower):
+		self.lowerX = lower
+	
 	def activationMethod(self, strength):
+		if strength > self.upperX or strength < self.lowerX:
+			return 0
 		if(self.activationType == "linear"):
 			return strength
 		elif(self.activationType == "log"):
@@ -423,15 +431,12 @@ class BraitenbergLightSensor( breve.Link ):
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
 
-				if self.activationType == "linear" and strength > 15:
+				if self.activationType == "linear" and strength > 14:
 					continue
 				
 				strength = ( 1.000000 / ( strength * strength ) ) * i.intensity
-				#if ( self.activationMethod and self.activationObject ):
-				#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
-				#print "strength: %f " %(strength)
+				
 				strength = self.activationMethod(strength)
-				#print strength
 
 				if strength > self.upperBound:
 					strength = self.upperBound
@@ -532,8 +537,8 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 		self.lowerBound = 0.0 #default
 		self.upperBound = 10.0 #default
 		self.activationType = "linear" #default
-		self.average = 1.0 #default
-		self.desvioPadrao = 0.2 #default
+		self.average = 0.5 #default
+		self.desvioPadrao = 0.15 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
 		BraitenbergBlockSensor.init( self )
@@ -566,12 +571,9 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 					flag = True
 					least = strength
 					item = i
-				#lights = ( lights + 1 )
 				
 		if flag:
 			strength = (1.000000/(least * least) ) * 1/item.reflection
-			#if ( self.activationMethod and self.activationObject ):
-			#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
 			
 			strength = self.activationMethod(strength)
 			
@@ -579,11 +581,7 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 				strength = self.upperBound
 			elif strength < self.lowerBound:
 				strength = self.lowerBound
-			#total = ( total + least )
-
-
-		#if ( lights != 0 ):
-			#total = ( total / lights )
+		
 		total = strength
 		total = ( ( 50 * total ) * self.bias )
 		self.wheels.activate( total )
