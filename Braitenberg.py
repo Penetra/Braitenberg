@@ -74,6 +74,9 @@ class BraitenbergVehicle( breve.MultiBody ):
 		elif type=="Blocks":
 			sensor = breve.createInstances( breve.BraitenbergBlockSensor, 1 )
 			sensor.setColor( breve.vector( 0, 0, 0 ) )
+		elif type=="Balls":
+			sensor = breve.createInstances( breve.BraitenbergBallSensor, 1 )
+			sensor.setColor( breve.vector( 0.5, 0.3, 0.1 ) )
 		
 		sensor.setType(type)
 		#sensor = breve.createInstances( breve.BraitenbergSensor, 1 )
@@ -228,6 +231,37 @@ class BraitenbergBlock(breve.Mobile):
 		self.reflection = reflection
 		
 breve.BraitenbergBlock = BraitenbergBlock
+
+class BraitenbergBall( breve.Mobile ):		
+	def __init__( self ):
+		breve.Mobile.__init__( self )
+		BraitenbergBall.init( self )
+
+	def init( self ):
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithSphere( 0.400000 ) )
+		self.setColor( breve.vector( 0, 1, 0 ) )
+		self.intensity = 1 #default
+		
+	def setIntensity(self, intensity):
+		self.intensity = intensity
+		
+
+breve.BraitenbergBall = BraitenbergBall
+		
+class BraitenbergTarget(breve.Stationary):
+	def __init__( self ):
+		breve.Stationary.__init__( self )
+		BraitenbergTarget.init( self )
+
+	def init( self ):
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
+		self.setColor( breve.vector( 5, 5, 0 ) )		
+		self.reflection = 1 #default
+		
+	def setReflection(self, reflection):
+		self.reflection = reflection
+		
+breve.BraitenbergTarget = BraitenbergTarget
 
 class BraitenbergWheel( breve.Link  ):
 	'''A BraitenbergWheel is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a wheel to the vehicle. <p> <b>NOTE: this class is included as part of the file "Braitenberg.tz".</b>'''
@@ -387,16 +421,8 @@ class BraitenbergLightSensor( breve.Link ):
 		
 	def setActivationType(self, type):
 		self.activationType = type
-	
-	def setUpperX(self, upper):
-		self.upperX = upper
-	
-	def setLowerX(self, lower):
-		self.lowerX = lower
-	
+		
 	def activationMethod(self, strength):
-		if strength > self.upperX or strength < self.lowerX:
-			return 0
 		if(self.activationType == "linear"):
 			return strength
 		elif(self.activationType == "log"):
@@ -431,12 +457,15 @@ class BraitenbergLightSensor( breve.Link ):
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
 
-				if self.activationType == "linear" and strength > 14:
+				if self.activationType == "linear" and strength > 15 or strength ==0 :
 					continue
 				
 				strength = ( 1.000000 / ( strength * strength ) ) * i.intensity
-				
+				#if ( self.activationMethod and self.activationObject ):
+				#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
+				#print "strength: %f " %(strength)
 				strength = self.activationMethod(strength)
+				#print strength
 
 				if strength > self.upperBound:
 					strength = self.upperBound
@@ -452,7 +481,7 @@ class BraitenbergLightSensor( breve.Link ):
 
 		if ( lights != 0 ):
 			total = ( total / lights )
-
+		
 		total = ( ( 50 * total ) * self.bias )
 		self.wheels.activate( total )
 
@@ -537,10 +566,11 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 		self.lowerBound = 0.0 #default
 		self.upperBound = 10.0 #default
 		self.activationType = "linear" #default
-		self.average = 0.5 #default
-		self.desvioPadrao = 0.15 #default
+		self.average = 1.0 #default
+		self.desvioPadrao = 0.2 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
+		self.counter = 0 #default
 		BraitenbergBlockSensor.init( self )
 
 	def init( self ):
@@ -571,25 +601,57 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 					flag = True
 					least = strength
 					item = i
+				#lights = ( lights + 1 )
 				
 		if flag:
 			strength = (1.000000/(least * least) ) * 1/item.reflection
-			
+			#if ( self.activationMethod and self.activationObject ):
+			#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
+			self.counter=self.counter+1
+			'''if self.counter == 10:
+				parede = breve.createInstances( breve.Mobile,1)
+				parede.setShape(breve.createInstances(breve.Shape,1).initWithCube(breve.vector( 0.1, 5, 0.2 )))
+				parede.move(self.getLocation()- breve.vector(4,0,1.1))
+				self.counter=0'''
 			strength = self.activationMethod(strength)
 			
 			if ( strength > self.upperBound ):
 				strength = self.upperBound
 			elif strength < self.lowerBound:
 				strength = self.lowerBound
-		
+			#total = ( total + least )
+
+
+		#if ( lights != 0 ):
+			#total = ( total / lights )
 		total = strength
 		total = ( ( 50 * total ) * self.bias )
 		self.wheels.activate( total )
-		
-		
-
-		
+				
 breve.BraitenbergBlockSensor = BraitenbergBlockSensor
+
+class BraitenbergBallSensor( BraitenbergLightSensor ):
+	def __init__( self ):
+		breve.Link.__init__( self )
+		self.bias = 0
+		self.direction = breve.vector()
+		self.sensorAngle = 0
+		self.wheels = breve.objectList()
+		self.lowerBound = 0.0 #default
+		self.upperBound = 10.0 #default
+		self.activationType = "linear" #default
+		self.average = 0.5 #default
+		self.desvioPadrao = 0.15 #default
+		self.lowerX = 0.0 #default
+		self.upperX = () #default
+		BraitenbergBallSensor.init( self )
+		
+	def init( self ):
+		self.bias = 1.000000
+		self.direction = breve.vector( 0, 1, 0 )
+		self.sensorAngle = 1.600000
+		
+breve.BraitenbergBallSensor = BraitenbergBallSensor
 
 breve.BraitenbergVehicles = BraitenbergVehicle
 breve.BraitenbergHeavyVehicles = BraitenbergHeavyVehicle
@@ -599,6 +661,7 @@ breve.BraitenbergSensors = BraitenbergSensor
 breve.BraitenbergBlocks = BraitenbergBlock
 breve.BraitenbergSmells = BraitenbergSmell
 breve.BraitenbergSounds = BraitenbergSound
-
+breve.BraitenbergTargets = BraitenbergTarget
+breve.BraitenbergBalls = BraitenbergBall
 
 
