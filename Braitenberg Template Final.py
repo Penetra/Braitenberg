@@ -14,10 +14,10 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 	
 	def init( self ):
 		self.vehicle = breve.createInstances( breve.BraitenbergVehicle, 1 )
-		#self.vehicle.move(breve.vector(2,0,0))
 		self.vehicle.rotate(breve.vector(0,2,0),3.14)
-		#self.watch( self.vehicle )
-		
+		self.watch( self.vehicle )
+		self.setCameraOffset(breve.vector(0,60,0))
+		self.setCameraRotation(180, 9.5)
 		
 		#Wheels
 		front_left = self.vehicle.addWheel(breve.vector( 1.4, 0, -1.5 ))
@@ -26,11 +26,13 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 		back_left = self.vehicle.addWheel(breve.vector( -1.4, 0, -1.5 ))
 		back_right = self.vehicle.addWheel(breve.vector(-1.4,0,1.5))
 		
-		sensor = self.vehicle.addSensor(breve.vector(0, 0.1, 1.5),breve.vector( 1, 0, 0 ),-1,"Balls")
+		sensor = self.vehicle.addSensor(breve.vector(0, 0.5, 1.5),breve.vector( 1, 0, 0 ),-1,"Balls")
 		
+		sensor.setUpperX(20)
+
 		sensor.link(front_left)
-		sensor.link(front_right)
 		sensor.link(back_left)
+		sensor.link(front_right)
 		sensor.link(back_right)
 		
 		self.ball = breve.createInstances(breve.BraitenbergBall,1)
@@ -39,25 +41,25 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 		self.ball.setVelocity(breve.vector(-15,0,-15))
 		self.ball.setE(0.5)
 		
-		self.southBlock = breve.createInstances(breve.BraitenbergTarget,1)
+		self.southBlock = breve.createInstances(breve.BraitenbergWall,1)
 		self.southBlock.setShape( breve.createInstances(breve.Shape,1).initWithCube(breve.vector(40,3,3)))
 		self.southBlock.move(breve.vector(0,2,4))
-		self.northBlock = breve.createInstances(breve.BraitenbergTarget,1)
+		self.northBlock = breve.createInstances(breve.BraitenbergWall,1)
 		self.northBlock.setShape( breve.createInstances(breve.Shape,1).initWithCube(breve.vector(40,3,3)))
 		self.northBlock.move(breve.vector(0,2,-30))
 		
-		self.eastBlock = breve.createInstances(breve.BraitenbergTarget,1)
+		self.eastBlock = breve.createInstances(breve.BraitenbergWall,1)
 		self.eastBlock.setShape( breve.createInstances(breve.Shape,1).initWithCube(breve.vector(3,3,32)))
 		self.eastBlock.move(breve.vector(20,2,-13))
-		self.westBlock = breve.createInstances(breve.BraitenbergTarget,1)
+		self.westBlock = breve.createInstances(breve.BraitenbergWall,1)
 		self.westBlock.setShape( breve.createInstances(breve.Shape,1).initWithCube(breve.vector(3,3,32)))
 		self.westBlock.move(breve.vector(-20,2,-13))
 
 		
 		for i in range(12):
+			breve.createInstances( breve.BraitenbergTarget,1).move(breve.vector(-16+(i*3),1,-23))
 			breve.createInstances( breve.BraitenbergTarget,1).move(breve.vector(-16+(i*3),1,-20))
 			breve.createInstances( breve.BraitenbergTarget,1).move(breve.vector(-16+(i*3),1,-17))
-			breve.createInstances( breve.BraitenbergTarget,1).move(breve.vector(-16+(i*3),1,-14))
 		
 		breve.myBraitenbergControl = myBraitenbergControl
 		

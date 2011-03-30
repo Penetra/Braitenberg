@@ -232,6 +232,44 @@ class BraitenbergBlock(breve.Mobile):
 		
 breve.BraitenbergBlock = BraitenbergBlock
 
+class BraitenbergTarget(breve.Stationary):
+	
+		
+	def __init__( self ):
+		breve.Stationary.__init__( self )
+		BraitenbergTarget.init( self )
+
+	def init( self ):
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
+		self.setColor( breve.vector( 5, 5, 0 ) )		
+		self.reflection = 1 #default
+		self.handleCollisions('BraitenbergBall', 'kill')
+		
+	def kill(self):
+		self.delete()
+	def setReflection(self, reflection):
+		self.reflection = reflection
+		
+		
+		
+breve.BraitenbergTarget = BraitenbergTarget
+
+
+class BraitenbergWall(breve.Stationary):
+	def __init__( self ):
+		breve.Stationary.__init__( self )
+		BraitenbergWall.init( self )
+
+	def init( self ):
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,2,2 ) ))
+		self.setColor( breve.vector( 5, 5, 0 ) )		
+		self.reflection = 1 #default
+		
+	def setReflection(self, reflection):
+		self.reflection = reflection
+		
+breve.BraitenbergWall = BraitenbergWall
+
 class BraitenbergBall( breve.Mobile ):		
 	def __init__( self ):
 		breve.Mobile.__init__( self )
@@ -241,27 +279,23 @@ class BraitenbergBall( breve.Mobile ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithSphere( 0.400000 ) )
 		self.setColor( breve.vector( 0, 1, 0 ) )
 		self.intensity = 1 #default
+		self.handleCollisions('BraitenbergTarget', 'accelerate')
+		self.handleCollisions('BraitenbergWall', 'accelerate')
+		self.handleCollisions('BraitenbergVehicle', 'accelerate')
+		self.handleCollisions('BraitenbergWheel', 'accelerate')
+		self.handleCollisions('BraitenbergBallSensor', 'accelerate')
+	
+	def accelerate(self):
+		vel = self.getVelocity()
+		mod = 9/sqrt(vel[0]**2 + vel[2]**2)
+		
+		self.setVelocity(vel * mod)
 		
 	def setIntensity(self, intensity):
 		self.intensity = intensity
 		
 
 breve.BraitenbergBall = BraitenbergBall
-		
-class BraitenbergTarget(breve.Stationary):
-	def __init__( self ):
-		breve.Stationary.__init__( self )
-		BraitenbergTarget.init( self )
-
-	def init( self ):
-		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
-		self.setColor( breve.vector( 5, 5, 0 ) )		
-		self.reflection = 1 #default
-		
-	def setReflection(self, reflection):
-		self.reflection = reflection
-		
-breve.BraitenbergTarget = BraitenbergTarget
 
 class BraitenbergWheel( breve.Link  ):
 	'''A BraitenbergWheel is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a wheel to the vehicle. <p> <b>NOTE: this class is included as part of the file "Braitenberg.tz".</b>'''
@@ -418,6 +452,12 @@ class BraitenbergLightSensor( breve.Link ):
 	
 	def setUpperBound(self, upper):
 		self.upperBound = upper
+		
+	def setLowerX(self, lower):
+		self.lowerX = lower
+	
+	def setUpperX(self, upper):
+		self.upperX = upper
 		
 	def setActivationType(self, type):
 		self.activationType = type
@@ -639,10 +679,6 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 		self.wheels = breve.objectList()
 		self.lowerBound = 0.0 #default
 		self.upperBound = 10.0 #default
-		self.activationType = "linear" #default
-		self.average = 0.5 #default
-		self.desvioPadrao = 0.15 #default
-		self.lowerX = 0.0 #default
 		self.upperX = () #default
 		BraitenbergBallSensor.init( self )
 		
@@ -650,6 +686,33 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 		self.bias = 1.000000
 		self.direction = breve.vector( 0, 1, 0 )
 		self.sensorAngle = 1.600000
+		
+	def iterate( self ):
+		i = None
+		transDir = breve.vector()
+		toBall = breve.vector()
+
+		transDir = ( self.getRotation() * self.direction )
+		for i in breve.allInstances( "BraitenbergBalls" ):
+			toBall = ( i.getLocation() - self.getLocation() )
+			angle = breve.breveInternalFunctionFinder.angle( self, toBall, transDir )
+			if ( angle < self.sensorAngle ):
+				strengthX = -1 * toBall[0]
+				strengthY = -1 * toBall[2]
+				strength = strengthX * 10/strengthY
+				#print strengthX, 1/strengthY, strength
+			else:
+				strength = 0
+				#print 0
+			
+			
+				
+		
+		
+		
+		self.wheels.activate(strength)
+	
+		
 		
 breve.BraitenbergBallSensor = BraitenbergBallSensor
 
@@ -663,5 +726,6 @@ breve.BraitenbergSmells = BraitenbergSmell
 breve.BraitenbergSounds = BraitenbergSound
 breve.BraitenbergTargets = BraitenbergTarget
 breve.BraitenbergBalls = BraitenbergBall
+breve.BraitenbergWalls = BraitenbergWall
 
 
