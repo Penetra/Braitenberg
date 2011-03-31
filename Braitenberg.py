@@ -88,7 +88,6 @@ class BraitenbergVehicle( breve.MultiBody ):
 			sensor.setColor( breve.vector( 0.5, 0.3, 0.1 ) )
 		
 		sensor.setType(type)
-		#sensor = breve.createInstances( breve.BraitenbergSensor, 1 )
 		sensor.setShape( self.sensorShape )
 		joint = breve.createInstances(breve.FixedJoint,1)
 		if direction>0:
@@ -99,7 +98,6 @@ class BraitenbergVehicle( breve.MultiBody ):
 		joint.setDoubleSpring( 300, 0.010000, -0.010000 )
 		self.addDependency( joint )
 		self.addDependency( sensor )
-		#sensor.setColor( breve.vector( 0, 0, 0 ) )
 		self.sensors.append( sensor )
 		return sensor
 
@@ -137,7 +135,7 @@ class BraitenbergVehicle( breve.MultiBody ):
 		return 0.600000
 
 	def getWheelWidth( self ):
-		return 0.100000
+		return 0.500000
 breve.BraitenbergVehicle = BraitenbergVehicle
 
 
@@ -227,24 +225,27 @@ breve.BraitenbergBlock = BraitenbergBlock
 class BraitenbergTarget(breve.Stationary):
 	def __init__( self ):
 		breve.Stationary.__init__( self )
-		self.counter = 1	#default
+		self.counter = 1
 		BraitenbergTarget.init( self )
 
 	def init( self ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
-		self.setColor( breve.vector( 5, 5, 0 ) )
+		self.setColor( breve.vector( 5, 5, 0 ) )		
+		self.counter = 1
 		self.handleCollisions('BraitenbergBall', 'kill')
+		self.setColor(breve.vector(self.counter/10,0,0))
 		
 	def setCounter( self, counter ):
 		self.counter = counter
 		
 	def kill(self):
-		counter -= 1
-		if (counter == 0):
+		self.counter -= 1
+		self.setColor(breve.vector(self.counter*10,self.counter*5,self.counter*2))
+		if self.counter==0:
 			self.delete()
-			
-	def setReflection(self, reflection):
-		self.reflection = reflection
+	
+	def setCounter(self, n):
+		self.counter = n
 breve.BraitenbergTarget = BraitenbergTarget
 
 
@@ -276,11 +277,13 @@ class BraitenbergBall( breve.Mobile ):
 		self.handleCollisions('BraitenbergVehicle', 'accelerate')
 		self.handleCollisions('BraitenbergWheel', 'accelerate')
 		self.handleCollisions('BraitenbergBallSensor', 'accelerate')
+		self.handleCollisions('Mobile', 'accelerate')
+		self.handleCollisions('Stationary', 'accelerate')
+		self.handleCollisions('Link', 'accelerate')
 	
 	def accelerate(self):
 		vel = self.getVelocity()
-		mod = 9/sqrt(vel[0]**2 + vel[2]**2)
-		
+		mod = 7/sqrt(vel[0]**2 + vel[2]**2)
 		self.setVelocity(vel * mod)
 breve.BraitenbergBall = BraitenbergBall
 
@@ -298,7 +301,6 @@ class BraitenbergWheel( breve.Link  ):
 
 	def activate( self, n ):
 		'''Used internally.'''
-
 		self.newVelocity = ( self.newVelocity + n )
 
 	def init( self ):
@@ -352,17 +354,17 @@ class BraitenbergSensor( breve.Link ):
 
 	def iterate( self ):
 		i = None
-		lights = 0
+		objects = 0
 		angle = 0
 		strength = 0
 		total = 0
 		transDir = breve.vector()
-		toLight = breve.vector()
+		toObject = breve.vector()
 
 		transDir = ( self.getRotation() * self.direction )
 		for i in breve.allInstances( "BraitenbergLights" ):
-			toLight = ( i.getLocation() - self.getLocation() )
-			angle = breve.breveInternalFunctionFinder.angle( self, toLight, transDir )
+			toObject = ( i.getLocation() - self.getLocation() )
+			angle = breve.breveInternalFunctionFinder.angle( self, toObject, transDir )
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) )
 				strength = ( 1.000000 / ( strength * strength ) )
@@ -374,13 +376,10 @@ class BraitenbergSensor( breve.Link ):
 					strength = 10
 
 				total = ( total + strength )
-				lights = ( lights + 1 )
+				objects += 1
 
-
-
-
-		if ( lights != 0 ):
-			total = ( total / lights )
+		if ( objects != 0 ):
+			total = ( total / objects )
 		total = ( ( 50 * total ) * self.bias )
 		self.wheels.activate( total )
 
@@ -477,9 +476,7 @@ class BraitenbergLightSensor( breve.Link ):
 		for i in breve.allInstances( self.type ):
 			toLight = ( i.getLocation() - self.getLocation() )
 			
-			
 
-			
 			angle = breve.breveInternalFunctionFinder.angle( self, toLight, transDir )
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
@@ -681,12 +678,11 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 			angle = breve.breveInternalFunctionFinder.angle( self, toBall, transDir )
 			if ( angle < self.sensorAngle ):
 				strengthX = -1 * toBall[0]
-				strengthY = -1 * toBall[2]
-				strength = 10 * strengthX / strengthY
+				strengthY = toBall[2]
+				strength = 12 * strengthX / strengthY
 				#print strengthX, 1/strengthY, strength
 			else:
 				strength = 0
-			
 		self.wheels.activate(strength)
 breve.BraitenbergBallSensor = BraitenbergBallSensor
 
