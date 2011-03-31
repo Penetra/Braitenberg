@@ -128,7 +128,7 @@ class BraitenbergVehicle( breve.MultiBody ):
 		return 0.600000
 
 	def getWheelWidth( self ):
-		return 0.100000
+		return 0.500000
 
 	def init( self ):
 		self.bodyShape = breve.createInstances( breve.Shape, 1 )
@@ -242,13 +242,18 @@ class BraitenbergTarget(breve.Stationary):
 	def init( self ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
 		self.setColor( breve.vector( 5, 5, 0 ) )		
-		self.reflection = 1 #default
+		self.counter = 1 #default
 		self.handleCollisions('BraitenbergBall', 'kill')
+		self.setColor(breve.vector(self.counter/10,0,0))
 		
 	def kill(self):
-		self.delete()
-	def setReflection(self, reflection):
-		self.reflection = reflection
+		self.counter-=1
+		self.setColor(breve.vector(self.counter*10,self.counter*5,self.counter*2))
+		if self.counter==0:
+			self.delete()
+	
+	def setCounter(self, n):
+		self.counter = n
 		
 		
 		
@@ -284,11 +289,13 @@ class BraitenbergBall( breve.Mobile ):
 		self.handleCollisions('BraitenbergVehicle', 'accelerate')
 		self.handleCollisions('BraitenbergWheel', 'accelerate')
 		self.handleCollisions('BraitenbergBallSensor', 'accelerate')
+		self.handleCollisions('Mobile', 'accelerate')
+		self.handleCollisions('Stationary', 'accelerate')
+		self.handleCollisions('Link', 'accelerate')
 	
 	def accelerate(self):
 		vel = self.getVelocity()
-		mod = 9/sqrt(vel[0]**2 + vel[2]**2)
-		
+		mod = 7/sqrt(vel[0]**2 + vel[2]**2)
 		self.setVelocity(vel * mod)
 		
 	def setIntensity(self, intensity):
@@ -310,7 +317,6 @@ class BraitenbergWheel( breve.Link  ):
 
 	def activate( self, n ):
 		'''Used internally.'''
-
 		self.newVelocity = ( self.newVelocity + n )
 
 	def init( self ):
@@ -698,8 +704,8 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 			angle = breve.breveInternalFunctionFinder.angle( self, toBall, transDir )
 			if ( angle < self.sensorAngle ):
 				strengthX = -1 * toBall[0]
-				strengthY = -1 * toBall[2]
-				strength = strengthX * 10/strengthY
+				strengthY = toBall[2]
+				strength = strengthX * 11/strengthY
 				#print strengthX, 1/strengthY, strength
 			else:
 				strength = 0
