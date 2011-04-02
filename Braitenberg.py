@@ -5,7 +5,7 @@
 
 
 import breve
-from math import log,pi,e,sqrt
+from math import log, pi, e, sqrt
 
 class BraitenbergControl( breve.PhysicalControl ):
 	'''This class is used for building simple Braitenberg vehicle  simulations.  To create a Braitenberg vehicle simulation,  subclass BraitenbergControl and use the init method to  create OBJECT(BraitenbergLight) and  OBJECT(BraitenbergVehicle) objects.'''
@@ -166,7 +166,7 @@ class BraitenbergLight( breve.Mobile):
 	def init( self):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithSphere( 0.300000 ) )
 		self.setColor( breve.vector( 1, 0, 0 ) )
-		self.intensity = 1.0 #default
+		self.intensity = 1.0
 		
 	def setIntensity(self, intensity):
 		self.intensity = intensity
@@ -200,7 +200,7 @@ class BraitenbergSound( breve.Mobile ):
 	def init( self ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithSphere( 0.500000 ) )
 		self.setColor( breve.vector( 0, 0, 1 ) )
-		self.intensity = 1 #default
+		self.intensity = 1
 		
 	def setIntensity(self, intensity):
 		self.intensity = intensity
@@ -213,55 +213,31 @@ class BraitenbergBlock(breve.Mobile):
 		BraitenbergBlock.init( self )
 
 	def init( self ):
-		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,2,2 ) ))
-		self.setColor( breve.vector( 5, 5, 0 ) )		
-		self.reflection = 1 #default
-		
-	def setReflection(self, reflection):
-		self.reflection = reflection
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 2, 2, 2 ) ) )
+		self.setColor( breve.vector( 5, 5, 0 ) )
 breve.BraitenbergBlock = BraitenbergBlock
 
 
 class BraitenbergTarget(breve.Stationary):
 	def __init__( self ):
 		breve.Stationary.__init__( self )
-		self.counter = 1
 		BraitenbergTarget.init( self )
 
 	def init( self ):
-		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,1,2 ) ))
-		self.setColor( breve.vector( 5, 5, 0 ) )		
-		self.counter = 1
-		self.handleCollisions('BraitenbergBall', 'kill')
-		self.setColor(breve.vector(self.counter/10,0,0))
+		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 4, 1, 2 ) ) )
+		self.setE( 1 )
+		self.handleCollisions( 'BraitenbergBall', 'kill' )
 		
 	def setCounter( self, counter ):
 		self.counter = counter
+		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		
 	def kill(self):
 		self.counter -= 1
-		self.setColor(breve.vector(self.counter*10,self.counter*5,self.counter*2))
+		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
 			self.delete()
-	
-	def setCounter(self, n):
-		self.counter = n
 breve.BraitenbergTarget = BraitenbergTarget
-
-
-class BraitenbergWall(breve.Stationary):
-	def __init__( self ):
-		breve.Stationary.__init__( self )
-		BraitenbergWall.init( self )
-
-	def init( self ):
-		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector(2,2,2 ) ))
-		self.setColor( breve.vector( 5, 5, 0 ) )		
-		self.reflection = 1 #default
-		
-	def setReflection(self, reflection):
-		self.reflection = reflection
-breve.BraitenbergWall = BraitenbergWall
 
 
 class BraitenbergBall( breve.Mobile ):		
@@ -271,9 +247,10 @@ class BraitenbergBall( breve.Mobile ):
 
 	def init( self ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithSphere( 0.400000 ) )
-		self.setColor( breve.vector( 0, 1, 0 ) )
+		self.setColor( breve.vector( 1, 0, 0 ) )
+		self.enablePhysics()
+		self.setE(1)
 		self.handleCollisions('BraitenbergTarget', 'accelerate')
-		self.handleCollisions('BraitenbergWall', 'accelerate')
 		self.handleCollisions('BraitenbergVehicle', 'accelerate')
 		self.handleCollisions('BraitenbergWheel', 'accelerate')
 		self.handleCollisions('BraitenbergBallSensor', 'accelerate')
@@ -283,8 +260,10 @@ class BraitenbergBall( breve.Mobile ):
 	
 	def accelerate(self):
 		vel = self.getVelocity()
-		mod = 7/sqrt(vel[0]**2 + vel[2]**2)
-		self.setVelocity(vel * mod)
+		mod = sqrt(vel[0]**2 + vel[2]**2)
+
+		self.setVelocity(vel * (5/mod))
+		
 breve.BraitenbergBall = BraitenbergBall
 
 
@@ -300,7 +279,6 @@ class BraitenbergWheel( breve.Link  ):
 		BraitenbergWheel.init( self )
 
 	def activate( self, n ):
-		'''Used internally.'''
 		self.newVelocity = ( self.newVelocity + n )
 
 	def init( self ):
@@ -697,4 +675,3 @@ breve.BraitenbergSmells = BraitenbergSmell
 breve.BraitenbergSounds = BraitenbergSound
 breve.BraitenbergTargets = BraitenbergTarget
 breve.BraitenbergBalls = BraitenbergBall
-breve.BraitenbergWalls = BraitenbergWall
