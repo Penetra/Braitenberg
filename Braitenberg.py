@@ -9,7 +9,7 @@ from math import log, pi, e, sqrt
 
 
 class BraitenbergControl( breve.PhysicalControl ):
-	'''This class is used for building simple Braitenberg vehicle  simulations.  To create a Braitenberg vehicle simulation,  subclass BraitenbergControl and use the init method to  create OBJECT(BraitenbergLight) and  OBJECT(BraitenbergVehicle) objects.'''
+	'''This class is used for building simple Braitenberg vehicle  simulations.  To create a Braitenberg vehicle simulation, subclass BraitenbergControl and use the init method to  create OBJECT(BraitenbergLight) and  OBJECT(BraitenbergVehicle) objects.'''
 
 	def __init__( self ):
 		breve.PhysicalControl.__init__( self )
@@ -29,9 +29,11 @@ class BraitenbergControl( breve.PhysicalControl ):
 		self.setBackgroundTextureImage( self.cloudTexture )
 	
 	def setTargets ( self, nTargets ):
+		'''Sets the number of targets in the game'''
 		self.nTargets = nTargets
 	
 	def updateTargets ( self ):
+		'''Decreases the number of targets present in the game and returns the current number of targets. Method called everytime a OBJECT(BraitenbergTarget) is destroyed.'''
 		self.nTargets -= 1
 		return self.nTargets
 	
@@ -111,7 +113,7 @@ class BraitenbergVehicle( breve.MultiBody ):
 		return sensor
 
 	def addWheel( self, location ):
-		'''Adds a wheel at location on the vehicle.  This method returns the wheel which is created, a OBJECT(BraitenbergWheel).  You'll use the returned object to connect it to the vehicle's sensors.'''
+		'''Adds a wheel at location on the vehicle. This method returns the wheel which is created, a OBJECT(BraitenbergWheel).  You'll use the returned object to connect it to the vehicle's sensors.'''
 
 		joint = None
 		wheel = None
@@ -217,6 +219,8 @@ breve.BraitenbergSound = BraitenbergSound
 
 
 class BraitenbergBlock(breve.Mobile):
+	'''A BraitenbergBlock is used in conjunction with OBJECT(BraitenbergControl) and OBJECT(BraitenbergVehicle).  It is what the OBJECT(BraitenbergBlockSensor) objects on the BraitenbergVehicle detect. <p> There are no special behaviors associated with the blocks--they're  basically just plain OBJECT(Mobile) objects.'''
+	
 	def __init__( self ):
 		breve.Mobile.__init__( self )
 		BraitenbergBlock.init( self )
@@ -232,6 +236,7 @@ breve.BraitenbergBlock = BraitenbergBlock
 
 
 class BraitenbergTarget(breve.Stationary):
+	'''A BraitenbergTarget is used in conjunction with OBJECT(BraitenbergControl) and OBJECT(BraitenbergVehicle).  It is what the OBJECT(BraitenbergTargetSensor) objects on the BraitenbergVehicle detect. <p> There are no special behaviors associated with the targets--they're  basically just plain OBJECT(Stationary) objects.'''
 	def __init__( self ):
 		breve.Stationary.__init__( self )
 		BraitenbergTarget.init( self )
@@ -241,12 +246,14 @@ class BraitenbergTarget(breve.Stationary):
 		self.setE( 1 )
 		self.handleCollisions( 'BraitenbergBall', 'kill' )
 		self.control = None
-		
+				
 	def setCounter( self, counter ):
+		'''Sets the number of hits necessary for the target to be destroyed and the target's starting color'''
 		self.counter = counter
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		
 	def kill( self ):
+		'''Decreases the number of hits necessary for the target to be destroyed and changes the target's color. Called everytime a OBJECT(BraitenbergBall) hits the target.'''
 		self.counter -= 1
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
@@ -282,9 +289,9 @@ class BraitenbergBall( breve.Mobile ):
 		self.handleCollisions('Link', 'accelerate')
 	
 	def accelerate(self):
+		'''Sets the ball's velocity to a higher or smaller velocity depending on the situation. Method called everytime the ball hits something.'''
 		vel = self.getVelocity()
 		mod = sqrt(vel[0]**2 + vel[2]**2)
-
 		self.setVelocity(vel * (5/mod))
 breve.BraitenbergBall = BraitenbergBall
 
@@ -651,6 +658,7 @@ breve.BraitenbergBlockSensor = BraitenbergBlockSensor
 
 
 class BraitenbergBallSensor( BraitenbergLightSensor ):
+	'''A BraitenbergBallSensor is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a sensor to the vehicle. <p>'''
 	def __init__( self ):
 		breve.Link.__init__( self )
 		self.bias = 0
@@ -680,7 +688,6 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 				strengthX = -1 * toBall[0]
 				strengthY = toBall[2]
 				strength = 12 * strengthX / strengthY
-				#print strengthX, 1/strengthY, strength
 			else:
 				strength = 0
 		self.wheels.activate(strength)
