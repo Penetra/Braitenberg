@@ -215,6 +215,10 @@ class BraitenbergBlock(breve.Mobile):
 	def init( self ):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 2, 2, 2 ) ) )
 		self.setColor( breve.vector( 5, 5, 0 ) )
+		self.reflection = 1
+	
+	def setReflection(self, intensity):
+		self.reflection = reflection
 breve.BraitenbergBlock = BraitenbergBlock
 
 
