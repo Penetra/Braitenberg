@@ -7,6 +7,7 @@
 import breve
 from math import log, pi, e, sqrt
 
+
 class BraitenbergControl( breve.PhysicalControl ):
 	'''This class is used for building simple Braitenberg vehicle  simulations.  To create a Braitenberg vehicle simulation,  subclass BraitenbergControl and use the init method to  create OBJECT(BraitenbergLight) and  OBJECT(BraitenbergVehicle) objects.'''
 
@@ -26,6 +27,14 @@ class BraitenbergControl( breve.PhysicalControl ):
 		self.cloudTexture = breve.createInstances( breve.Image, 1 ).load( 'images/clouds.png' )
 		self.setBackgroundColor( breve.vector( 0.400000, 0.600000, 0.900000 ) )
 		self.setBackgroundTextureImage( self.cloudTexture )
+	
+	def setTargets ( self, nTargets ):
+		self.nTargets = nTargets
+	
+	def updateTargets ( self ):
+		self.nTargets -= 1
+		return self.nTargets
+	
 breve.BraitenbergControl = BraitenbergControl
 
 
@@ -237,19 +246,20 @@ class BraitenbergTarget(breve.Stationary):
 		self.counter = counter
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		
-	def kill(self):
+	def kill( self ):
 		self.counter -= 1
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
 			self.delete()
+			if self.control.updateTargets()==0:
+				self.control.endSimulation()
 		
-		print len(breve.allInstances( "BraitenbergTarget" ))
+		'''print len(breve.allInstances( "BraitenbergTarget" ))
 		if not breve.allInstances( "BraitenbergTarget" ):
-			self.control.endSimulation()
+			self.control.endSimulation()'''
 	
 	def setControl(self, control):
 		self.control = control
-	
 breve.BraitenbergTarget = BraitenbergTarget
 
 
@@ -276,7 +286,6 @@ class BraitenbergBall( breve.Mobile ):
 		mod = sqrt(vel[0]**2 + vel[2]**2)
 
 		self.setVelocity(vel * (5/mod))
-		
 breve.BraitenbergBall = BraitenbergBall
 
 

@@ -1,4 +1,6 @@
 import breve
+import os, sys
+
 class myBraitenbergControl( breve.BraitenbergControl ):
     def __init__( self ):
         breve.BraitenbergControl.__init__( self )
@@ -50,9 +52,10 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         '''
         
         blockColor = breve.vector( 0, 0, 0.2 )
+        nTargets = 0
         
-        filename = "level2.txt"
-        #print os.getcwd()
+        filename = "level4.txt"
+		
         try:
             f = open(filename, "r")
             
@@ -78,6 +81,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
                             block = breve.createInstances( breve.BraitenbergTarget, 1 )
                             block.setCounter(c)
                             block.setControl(self)
+                            nTargets += 1
                         else:
                             block = breve.createInstances( breve.Stationary, 1 )
                             block.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( 4, 1, 2 ) ) )
@@ -88,7 +92,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
             f.close()
                 
         except IOError:
-            print "Error: File named "+filename+" not found."
+            print "Error: File named "+filename+" could not found in directory "+os.getcwd()
             dist1 = 6
             dist2 = 0
             dist3 = 6
@@ -97,7 +101,8 @@ class myBraitenbergControl( breve.BraitenbergControl ):
             columns = 6
             startX = -10
             startY = -12
-            
+			
+        myBraitenbergControl.setTargets(self, nTargets)
         
         self.southWall = breve.createInstances( breve.Stationary, 1 )
         self.southWall.setColor ( blockColor )
@@ -117,7 +122,6 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         self.westWall.move( breve.vector( startX - 3 - dist4, 1, dist1 - lines - (dist1 + dist2 + dist3)/2 ) )
 
 
-        
         breve.myBraitenbergControl = myBraitenbergControl
 
 
