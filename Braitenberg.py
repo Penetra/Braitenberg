@@ -231,6 +231,7 @@ class BraitenbergTarget(breve.Stationary):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 4, 1, 2 ) ) )
 		self.setE( 1 )
 		self.handleCollisions( 'BraitenbergBall', 'kill' )
+		self.control = None
 		
 	def setCounter( self, counter ):
 		self.counter = counter
@@ -241,6 +242,14 @@ class BraitenbergTarget(breve.Stationary):
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
 			self.delete()
+		
+		print len(breve.allInstances( "BraitenbergTarget" ))
+		if not breve.allInstances( "BraitenbergTarget" ):
+			self.control.endSimulation()
+	
+	def setControl(self, control):
+		self.control = control
+	
 breve.BraitenbergTarget = BraitenbergTarget
 
 
