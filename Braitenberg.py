@@ -4,7 +4,7 @@
 # file for more detailed comments and documentation.
 
 
-import breve
+import breve, os
 from math import log, pi, e, sqrt
 
 
@@ -257,9 +257,15 @@ class BraitenbergTarget(breve.Stationary):
 		self.counter -= 1
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
-			self.delete()
+			breve.deleteInstance(self)
+			#self.delete()
+			print len(breve.allInstances('BraitenbergTarget'))
+			
 			if self.control.updateTargets()==0:
-				self.control.endSimulation()
+				if os.name == 'posix':
+					self.control.endSimulation()
+				else:
+					self.control.pause()
 		
 		'''print len(breve.allInstances( "BraitenbergTarget" ))
 		if not breve.allInstances( "BraitenbergTarget" ):
@@ -293,6 +299,7 @@ class BraitenbergBall( breve.Mobile ):
 		vel = self.getVelocity()
 		mod = sqrt(vel[0]**2 + vel[2]**2)
 		self.setVelocity(vel * (5/mod))
+		
 breve.BraitenbergBall = BraitenbergBall
 
 

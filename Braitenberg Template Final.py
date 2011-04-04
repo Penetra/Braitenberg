@@ -55,7 +55,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         nTargets = 0
         
         filename = "level4.txt"
-		
+        
         try:
             f = open(filename, "r")
             
@@ -101,7 +101,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
             columns = 6
             startX = -10
             startY = -12
-			
+            
         myBraitenbergControl.setTargets(self, nTargets)
         
         self.southWall = breve.createInstances( breve.Stationary, 1 )
@@ -120,8 +120,9 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         self.westWall.setColor ( blockColor )
         self.westWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( 2, 2, (lines+1) * 2 + dist1 + dist2 + dist3 - 4 ) ) )
         self.westWall.move( breve.vector( startX - 3 - dist4, 1, dist1 - lines - (dist1 + dist2 + dist3)/2 ) )
-
-
+        
+        #self.disableLighting()
+        
         breve.myBraitenbergControl = myBraitenbergControl
 
 
