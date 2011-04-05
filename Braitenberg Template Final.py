@@ -48,7 +48,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         blockColor = breve.vector( 0, 0, 0.2 )
         nTargets = 0
         
-        filename = "level5.txt"
+        filename = "levels\level5.txt"
         
         try:
             f = open(filename, "r")
@@ -85,7 +85,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
             f.close()
                 
         except IOError:
-            print "Error: File named "+filename+" could not found in directory "+os.getcwd()
+            print "Error: File named "+filename+" could not found in directory "+os.getcwd()+"\levels"
             dist1 = 6
             dist2 = 0
             dist3 = 6
