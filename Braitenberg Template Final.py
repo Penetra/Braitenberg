@@ -43,6 +43,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         self.northWall = None
         self.eastWall = None
         self.westWall = None
+        self.otherWalls = []
         
         self.level( 1 )
         
@@ -67,6 +68,8 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         breve.deleteInstances( self.northWall )
         breve.deleteInstances( self.eastWall )
         breve.deleteInstances( self.westWall )
+        for i in self.otherWalls:
+			breve.deleteInstances( i )
 
         blockColor = breve.vector( 0, 0, 0.2 )
         nTargets = 0
@@ -106,13 +109,15 @@ class myBraitenbergControl( breve.BraitenbergControl ):
                         else:
                             block = breve.createInstances( breve.Stationary, 1 )
                             block.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( 4, 1, 2 ) ) )
-                            block.setColor ( blockColor )
+                            block.setColor( blockColor )
+                            self.otherWalls.append( block )
                         block.move( breve.vector( startX + (j*4), 1, startY + (i*2) - dist2 ) )
                         
             f.close()
                 
         except IOError:
             print "Error: File named "+filename+" could not found in directory "+os.getcwd()+"\levels"
+			#default values
             dist1 = 6
             dist2 = 0
             dist3 = 6
