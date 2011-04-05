@@ -273,12 +273,19 @@ class BraitenbergTarget(breve.Stationary):
 			if self.control.updateTargets()==0:
 				if os.name == 'posix':
 					for i in breve.allInstances('Stationary'):
-						i.delete()
+						if i != self:
+							breve.deleteInstance(i)
 					for i in breve.allInstances('BraitenbergBall'):
 						i.delete()
 					self.control.level(5)
 				else:
-					self.control.pause()
+					#self.control.pause()
+					for i in breve.allInstances('Stationary'):
+						if i != self:
+							breve.deleteInstance(i)
+					for i in breve.allInstances('BraitenbergBall'):
+						i.delete()
+					self.control.level(5)
 		
 		'''print len(breve.allInstances( "BraitenbergTarget" ))
 		if not breve.allInstances( "BraitenbergTarget" ):
