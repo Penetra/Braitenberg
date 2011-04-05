@@ -11,7 +11,8 @@ class myBraitenbergControl( breve.BraitenbergControl ):
     
         #Create vehicle
         self.vehicle = breve.createInstances( breve.BraitenbergVehicle, 1 )
-        
+        self.vehicle.setWheelWidth(0.50000)
+        print 'asdasdasd'
         #Create vehicle wheels
         front_left = self.vehicle.addWheel(breve.vector( 1.4, 0, 0 ))
         #front_right = self.vehicle.addWheel(breve.vector( 1.4,0,1.2))
@@ -31,24 +32,29 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         #sensor.link(front_right)
         #sensor2.link(back_right)
         
-        #Create ball        
-        self.ball = breve.createInstances(breve.BraitenbergBall,1)
-        self.ball.move(breve.vector(0, 0, -2))
-        self.ball.setVelocity(breve.vector(-5, 0, -6))
+        self.level(1)
         
+        breve.myBraitenbergControl = myBraitenbergControl
+    
+    def level(self, level):
         #Create level
-        
+        self.vehicle.move(breve.vector(0,0,0 ) )
         '''
         dist1 - distance from the southWall to the spaceship
         dist2 - distance from the spaceship to the first line of blocks
         dist3 - distance from the last line of blocks to the northWall
         dist4 - distance from a side block to the wall on the same side. Min = 0, Max = 2
         '''
+        #Create ball        
+        self.ball = breve.createInstances(breve.BraitenbergBall,1)
+        self.ball.move(breve.vector(0, 0, -2))
+        self.ball.setVelocity(breve.vector(-5, 0, -6))
         
         blockColor = breve.vector( 0, 0, 0.2 )
         nTargets = 0
         
-        filename = "level5.txt"
+        filename = "level"+str(self.levelCounter)+".txt"
+        self.levelCounter += 1
         
         try:
             f = open(filename, "r")
@@ -114,13 +120,13 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         self.westWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( 2, 2, (lines+1) * 2 + dist1 + dist2 + dist3 - 4 ) ) )
         self.westWall.move( breve.vector( startX - 3 - dist4, 1, dist1 - lines - (dist1 + dist2 + dist3)/2 ) )
         
-		
+        
         #Set the camera's position
         #self.watch( self.vehicle )
         self.disableLighting()
         self.pointCamera( breve.vector( 0, 0, -12 ), breve.vector( 0, 60, 1 ) )    
-		
-        breve.myBraitenbergControl = myBraitenbergControl
+        
+        
 
 
 #Create an instance of our controller object to initialize the simulation

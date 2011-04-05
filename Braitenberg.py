@@ -27,6 +27,7 @@ class BraitenbergControl( breve.PhysicalControl ):
 		self.cloudTexture = breve.createInstances( breve.Image, 1 ).load( 'images/clouds.png' )
 		self.setBackgroundColor( breve.vector( 0.400000, 0.600000, 0.900000 ) )
 		self.setBackgroundTextureImage( self.cloudTexture )
+		self.levelCounter = 1
 	
 	def setTargets ( self, nTargets ):
 		'''Sets the number of targets in the game'''
@@ -51,6 +52,7 @@ class BraitenbergVehicle( breve.MultiBody ):
 		self.sensors = breve.objectList()
 		self.wheelShape = None
 		self.wheels = breve.objectList()
+		self.wheelWidth = 0.100000
 		
 		BraitenbergVehicle.init( self )
 		
@@ -146,7 +148,13 @@ class BraitenbergVehicle( breve.MultiBody ):
 		return 0.600000
 
 	def getWheelWidth( self ):
-		return 0.500000
+		print 'lol2'
+		return self.wheelWidth
+	
+	def setWheelWidth(self, width):
+		self.wheelWidth = width
+		self.wheelShape.initWithPolygonDisk( 40, self.getWheelWidth(), self.getWheelRadius() )
+	
 breve.BraitenbergVehicle = BraitenbergVehicle
 
 
@@ -229,6 +237,7 @@ class BraitenbergBlock(breve.Mobile):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 2, 2, 2 ) ) )
 		self.setColor( breve.vector( 5, 5, 0 ) )
 		self.reflection = 1
+		
 	
 	def setReflection(self, intensity):
 		self.reflection = reflection
@@ -263,7 +272,11 @@ class BraitenbergTarget(breve.Stationary):
 			
 			if self.control.updateTargets()==0:
 				if os.name == 'posix':
-					self.control.endSimulation()
+					for i in breve.allInstances('Stationary'):
+						i.delete()
+					for i in breve.allInstances('BraitenbergBall'):
+						i.delete()
+					self.control.level(5)
 				else:
 					self.control.pause()
 		
@@ -463,6 +476,8 @@ class BraitenbergLightSensor( breve.Link ):
 		self.activationType = type
 		
 	def activationMethod(self, strength):
+		if strength > self.upperX or strength < self.lowerX:
+			return 0
 		if(self.activationType == "linear"):
 			return strength
 		elif(self.activationType == "log"):
@@ -495,7 +510,7 @@ class BraitenbergLightSensor( breve.Link ):
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
 
-				if self.activationType == "linear" and strength > 15 or strength ==0 :
+				if self.activationType == "linear" and strength > 15:
 					continue
 				
 				strength = ( 1.000000 / ( strength * strength ) ) * i.intensity
