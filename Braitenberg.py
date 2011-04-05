@@ -34,9 +34,10 @@ class BraitenbergControl( breve.PhysicalControl ):
 	
 	def updateTargets ( self ):
 		'''Decreases the number of targets present in the game and returns the current number of targets. Method called everytime a OBJECT(BraitenbergTarget) is destroyed.'''
-		self.nTargets -= 1
-		return self.nTargets
+		self.nTargets -= 1		
 	
+		if self.nTargets==0:
+			self.level( 0 )
 breve.BraitenbergControl = BraitenbergControl
 
 
@@ -51,6 +52,7 @@ class BraitenbergVehicle( breve.MultiBody ):
 		self.sensors = breve.objectList()
 		self.wheelShape = None
 		self.wheels = breve.objectList()
+		self.wheelWidth = 0.100000
 		
 		BraitenbergVehicle.init( self )
 		
@@ -146,7 +148,12 @@ class BraitenbergVehicle( breve.MultiBody ):
 		return 0.600000
 
 	def getWheelWidth( self ):
-		return 0.500000
+		return self.wheelWidth
+	
+	def setWheelWidth(self, width):
+		self.wheelWidth = width
+		self.wheelShape.initWithPolygonDisk( 40, self.getWheelWidth(), self.getWheelRadius() )
+	
 breve.BraitenbergVehicle = BraitenbergVehicle
 
 
@@ -229,7 +236,7 @@ class BraitenbergBlock(breve.Mobile):
 		self.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube(breve.vector( 2, 2, 2 ) ) )
 		self.setColor( breve.vector( 5, 5, 0 ) )
 		self.reflection = 1
-	
+		
 	def setReflection(self, intensity):
 		self.reflection = reflection
 breve.BraitenbergBlock = BraitenbergBlock
@@ -246,6 +253,9 @@ class BraitenbergTarget(breve.Stationary):
 		self.setE( 1 )
 		self.handleCollisions( 'BraitenbergBall', 'kill' )
 		self.control = None
+		
+	def setControl( self, control ):
+		self.control = control
 				
 	def setCounter( self, counter ):
 		'''Sets the number of hits necessary for the target to be destroyed and the target's starting color'''
@@ -258,21 +268,8 @@ class BraitenbergTarget(breve.Stationary):
 		self.setColor( breve.vector( 0, 1, self.counter * 0.2 ) )
 		if self.counter==0:
 			breve.deleteInstance(self)
-			#self.delete()
-			print len(breve.allInstances('BraitenbergTarget'))
-			
-			if self.control.updateTargets()==0:
-				if os.name == 'posix':
-					self.control.endSimulation()
-				else:
-					self.control.pause()
-		
-		'''print len(breve.allInstances( "BraitenbergTarget" ))
-		if not breve.allInstances( "BraitenbergTarget" ):
-			self.control.endSimulation()'''
-	
-	def setControl(self, control):
-		self.control = control
+			self.control.updateTargets()
+
 breve.BraitenbergTarget = BraitenbergTarget
 
 
@@ -463,6 +460,8 @@ class BraitenbergLightSensor( breve.Link ):
 		self.activationType = type
 		
 	def activationMethod(self, strength):
+		if strength > self.upperX or strength < self.lowerX:
+			return 0
 		if(self.activationType == "linear"):
 			return strength
 		elif(self.activationType == "log"):
@@ -495,7 +494,7 @@ class BraitenbergLightSensor( breve.Link ):
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
 
-				if self.activationType == "linear" and strength > 15 or strength ==0 :
+				if self.activationType == "linear" and strength > 15:
 					continue
 				
 				strength = ( 1.000000 / ( strength * strength ) ) * i.intensity
