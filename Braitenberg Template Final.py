@@ -44,7 +44,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
         self.eastWall = None
         self.westWall = None
         self.otherWalls = []
-        
+        self.levels = len(os.listdir(os.getcwd()+"/levels"))-1
         self.level( 1 )
         
         breve.myBraitenbergControl = myBraitenbergControl

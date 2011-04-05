@@ -28,6 +28,7 @@ class BraitenbergControl( breve.PhysicalControl ):
 		self.setBackgroundColor( breve.vector( 0.400000, 0.600000, 0.900000 ) )
 		self.setBackgroundTextureImage( self.cloudTexture )
 		self.sound = breve.createInstances( breve.Sound, 1 ).load( 'sounds/soundeffects/Arcade_S-wwwbeat-1886.wav' )
+		self.levels = 1
 	
 	def playSound ( self ):
 		self.sound.play(1.0)
@@ -36,17 +37,23 @@ class BraitenbergControl( breve.PhysicalControl ):
 		'''Sets the number of targets in the game'''
 		self.nTargets = nTargets
 	
+	def setLevels(levels):
+		self.levels = levels
+	
 	def updateTargets ( self ):
 		'''Decreases the number of targets present in the game and returns the current number of targets. Method called everytime a OBJECT(BraitenbergTarget) is destroyed.'''
 		self.nTargets -= 1
 	
 		if self.nTargets==0:
-			self.level( 0 )
-			
-		'''if os.name == 'posix'
-			self.control.endSimulation()
-		else
-			self.control.pause()'''
+			if self.levels:
+				self.levels -= 1
+				self.level( 0 )
+			else:
+				if os.name == 'posix':
+					self.endSimulation()
+				else:
+					self.pause()
+
 breve.BraitenbergControl = BraitenbergControl
 
 
