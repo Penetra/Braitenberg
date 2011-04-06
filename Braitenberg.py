@@ -15,68 +15,31 @@ class BraitenbergControl( breve.PhysicalControl ):
 		breve.PhysicalControl.__init__( self )
 		self.cloudTexture = None
 		self.floor = None
-		self.vehicle = None
-		self.ball = None
+		BraitenbergControl.init( self )
+
+	def init( self ):
+		self.enableLighting()
+		self.enableSmoothDrawing()
+		self.floor = breve.createInstances( breve.Floor, 1 )
+		self.pointCamera( breve.vector( 0, 0, 0 ), breve.vector( 3, 3, 24 ) )
+		self.enableShadows()
+		self.enableReflections()
+		self.cloudTexture = breve.createInstances( breve.Image, 1 ).load( 'images/clouds.png' )
+		self.setBackgroundColor( breve.vector( 0.400000, 0.600000, 0.900000 ) )
+		self.setBackgroundTextureImage( self.cloudTexture )
+		
+	def setArkanoid( self, vehicle, ball, currentLevel, lastLevel, targetSound, victorySound ):
+		self.vehicle = vehicle
+		self.ball = ball
+		self.currentLevel = 0
+		self.lastLevel = lastLevel
+		self.targetSound = targetSound
+		self.victorySound = victorySound
 		self.southWall = None
 		self.northWall = None
 		self.eastWall = None
 		self.westWall = None
 		self.otherWalls = []
-		self.nTargets = 0
-		self.currentLevel = 0
-		self.lastLevel = 0
-		BraitenbergControl.init( self )
-
-	def init( self ):
-		'''self.enableLighting()
-		self.pointCamera( breve.vector( 0, 0, 0 ), breve.vector( 3, 3, 24 ) )
-		self.enableShadows()
-		self.enableReflections()
-		self.setBackgroundColor( breve.vector( 0.400000, 0.600000, 0.900000 ) )
-		self.setBackgroundTextureImage( self.cloudTexture )'''
-		
-		#Set the camera's position and direction
-		#self.watch( self.vehicle )
-		self.pointCamera( breve.vector( 0, 0, -12 ), breve.vector( 0, 60, 1 ) )
-		
-		#Set various settings
-		self.enableSmoothDrawing()
-		self.disableLighting()
-		self.floor = breve.createInstances( breve.Floor, 1 )
-		self.floor.setColor( breve.vector( 0, 0, 0 ) )
-		
-		#Create vehicle
-		self.vehicle = breve.createInstances( breve.BraitenbergVehicle, 1 )
-		self.vehicle.setWheelWidth(0.50000)
-
-		#Create vehicle wheels
-		front_left = self.vehicle.addWheel(breve.vector( 1.4, 0, 0 ) )
-		back_left = self.vehicle.addWheel(breve.vector( -1.4, 0, 0 ) )
-
-		#Create vehicle sensors        
-		sensor = self.vehicle.addSensor( breve.vector( 0, 0.6, -1 ),breve.vector( -1, 0, 0 ), -1, "Balls" )
-		sensor2 = self.vehicle.addSensor( breve.vector( 0, 0.6, -1 ),breve.vector( -1, 0, 0 ), -1, "Balls" )
-
-		#Set the sensors' max strength
-		sensor.setUpperX(20)
-		sensor.setUpperX(20)
-
-		#Link each sensor to each wheel
-		sensor.link(front_left)
-		sensor2.link(back_left)
-
-		#Create ball        
-		self.ball = breve.createInstances( breve.BraitenbergBall, 1 )
-		self.ball.move( breve.vector( 0, 0, -2 ) )
-		self.ball.setVelocity( breve.vector( -5, 0, -6 ) )
-
-		#Create some sounds
-		self.targetSound = breve.createInstances( breve.Sound, 1 ).load( 'sounds/soundeffects/Arcade_S-wwwbeat-1886.wav' )
-		self.victorySound = breve.createInstances( breve.Sound, 1 ).load( 'sounds/soundeffects/Victory Fanfare.wav' )
-		
-		self.lastLevel = len(os.listdir(os.getcwd()+"/levels"))
-		firstLevel = 6
-		self.level( firstLevel )
 		
 	def level( self, level ):
 		'''Method responsible for the creation of each level'''
@@ -161,11 +124,11 @@ class BraitenbergControl( breve.PhysicalControl ):
 
 		self.southWall = breve.createInstances( breve.Stationary, 1 )
 		self.southWall.setColor ( blockColor )
-		self.southWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( (columns+1) * 4, 2, 2 ) ) )
+		self.southWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( (columns+1 ) * 4, 2, 2 ) ) )
 		self.southWall.move( breve.vector( 0, 1, dist1 ) )
 		self.northWall = breve.createInstances( breve.Stationary, 1 )
 		self.northWall.setColor ( blockColor )
-		self.northWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( (columns+1) * 4, 2, 2 ) ) )
+		self.northWall.setShape( breve.createInstances( breve.Shape, 1 ).initWithCube( breve.vector( (columns+1 ) * 4, 2, 2 ) ) )
 		self.northWall.move( breve.vector( 0, 1, startY - dist2 - dist3 + 0.5 ) )
 		self.eastWall = breve.createInstances( breve.Stationary, 1 )
 		self.eastWall.setColor ( blockColor )
@@ -177,16 +140,16 @@ class BraitenbergControl( breve.PhysicalControl ):
 		self.westWall.move( breve.vector( startX - 3 - dist4, 1, dist1 - lines - (dist1 + dist2 + dist3)/2 ) )
 	
 	def playTargetSound ( self ):
-		self.targetSound.play(1.0)
+		self.targetSound.play( 1.0 )
 		
 	def playVictorySound ( self ):
-		self.victorySound.play(1.0)
+		self.victorySound.play( 1.0 )		
 	
 	def updateTargets ( self ):
-		'''Decreases the number of targets present in the game. Method called everytime a OBJECT(BraitenbergTarget) is destroyed.'''
+		'''Decreases the number of targets present in the game and returns the current number of targets. Method called everytime a OBJECT(BraitenbergTarget) is destroyed.'''
 		self.nTargets -= 1
 	
-		if self.nTargets==0:
+		if self.nTargets == 0:
 			if self.currentLevel == self.lastLevel:
 				self.playVictorySound()
 				if os.name == 'posix':
@@ -195,6 +158,7 @@ class BraitenbergControl( breve.PhysicalControl ):
 					self.pause()
 			else:
 				self.level( 0 )
+
 breve.BraitenbergControl = BraitenbergControl
 
 
@@ -427,6 +391,7 @@ class BraitenbergTarget(breve.Stationary):
 		if self.counter==0:
 			breve.deleteInstance(self)
 			self.control.updateTargets()
+
 breve.BraitenbergTarget = BraitenbergTarget
 
 
@@ -453,6 +418,7 @@ class BraitenbergBall( breve.Mobile ):
 		vel = self.getVelocity()
 		mod = sqrt(vel[0]**2 + vel[2]**2)
 		self.setVelocity(vel * (5/mod))
+		
 breve.BraitenbergBall = BraitenbergBall
 
 
@@ -839,6 +805,7 @@ class BraitenbergBallSensor( BraitenbergLightSensor ):
 		
 	def iterate( self ):
 		i = None
+		strength = 0
 		transDir = breve.vector()
 		toBall = breve.vector()
 
