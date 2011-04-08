@@ -340,78 +340,6 @@ class BraitenbergSensor( breve.Link ):
 
 	def __init__( self ):
 		breve.Link.__init__( self )
-		self.activationMethod = ''
-		self.activationObject = None
-		self.bias = 0
-		self.direction = breve.vector()
-		self.sensorAngle = 0
-		self.wheels = breve.objectList()
-		BraitenbergSensor.init( self )
-
-	def init( self ):
-		self.bias = 1.000000
-		self.direction = breve.vector( 0, 1, 0 )
-		self.sensorAngle = 1.600000
-
-	def iterate( self ):
-		i = None
-		objects = 0
-		angle = 0
-		strength = 0
-		total = 0
-		transDir = breve.vector()
-		toObject = breve.vector()
-
-		transDir = ( self.getRotation() * self.direction )
-		for i in breve.allInstances( "BraitenbergLights" ):
-			toObject = ( i.getLocation() - self.getLocation() )
-			angle = breve.breveInternalFunctionFinder.angle( self, toObject, transDir )
-			if ( angle < self.sensorAngle ):
-				strength = breve.length( ( self.getLocation() - i.getLocation() ) )
-				strength = ( 1.000000 / ( strength * strength ) )
-				if ( self.activationMethod and self.activationObject ):
-					strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
-
-
-				if ( strength > 10 ):
-					strength = 10
-
-				total = ( total + strength )
-				objects += 1
-
-		if ( objects != 0 ):
-			total = ( total / objects )
-		total = ( ( 50 * total ) * self.bias )
-		self.wheels.activate( total )
-
-	def link( self, w ):
-		'''Associates this sensor with wheel w.'''
-
-		self.wheels.append( w )
-
-	def setActivationMethod( self, m, o ):
-		'''This method specifies an activation method for the sensor.  An activation method is a method which takes as input the strength read by the sensor, and as output returns the strength of the  signal which will travel on to the motor. <p> Your activation function should be defined as: <pre> + to <i>activation-function-name</i> with-sensor-strength s (float): </pre> <p> The default activation method is linear, but more complex vehicles may require non-linear activation functions. '''
-
-		self.activationMethod = m
-		self.activationObject = o
-
-	def setBias( self, d ):
-		'''Sets the "bias" of this sensor.  The default bias is 1, meaning that the sensor has a positive influence on associated wheels with strength 1.  You can change this to any magnitude, positive or negative.'''
-
-		self.bias = d
-
-	def setSensorAngle( self, n ):
-		'''Sets the angle in which this sensor can detect light.  The default value of 1.5 means that the sensor can see most of everything in front of it.  Setting the value to be any higher leads to general wackiness, so I don't suggest it.'''
-
-		self.sensorAngle = n
-breve.BraitenbergSensor = BraitenbergSensor
-
-
-class BraitenbergLightSensor( breve.Link ):
-	'''A BraitenbergLightSensor is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a sensor to the vehicle. <p> <b>NOTE: this class is included as part of the file "Braitenberg.tz".</b>'''
-
-	def __init__( self ):
-		breve.Link.__init__( self )
 		self.bias = 0
 		self.direction = breve.vector()
 		self.sensorAngle = 0
@@ -424,12 +352,12 @@ class BraitenbergLightSensor( breve.Link ):
 		self.desvioPadrao = 0.13 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
-		BraitenbergLightSensor.init( self )
+		BraitenbergSensor.init( self )
 
 	def init( self ):
-		self.bias = 1.000000 #5.000000
+		self.bias = 1.000000 
 		self.direction = breve.vector( 0, 1, 0 )
-		self.sensorAngle = 1.600000 #1.200000
+		self.sensorAngle = 1.600000 
 	
 	def setType(self, type):
 		self.type = "Braitenberg" + type
@@ -530,10 +458,31 @@ class BraitenbergLightSensor( breve.Link ):
 		'''Sets the angle in which this sensor can detect light.  The default value of 1.5 means that the sensor can see most of everything in front of it.  Setting the value to be any higher leads to general wackiness, so I don't suggest it.'''
 
 		self.sensorAngle = n
+breve.BraitenbergSensor = BraitenbergSensor
+
+class BraitenbergLightSensor( BraitenbergSensor ):
+	def __init__( self ):
+		breve.Link.__init__( self )
+		self.bias = 0
+		self.direction = breve.vector()
+		self.sensorAngle = 0
+		self.wheels = breve.objectList()
+		self.lowerBound = 0.0 #default
+		self.upperBound = 10.0 #default
+		self.activationType = "linear" #default
+		self.average = 0.5 #default
+		self.desvioPadrao = 0.15 #default
+		self.lowerX = 0.0 #default
+		self.upperX = () #default
+		BraitenbergLightSensor.init( self )
+	def init( self ):
+		self.bias = 1.000000
+		self.direction = breve.vector( 0, 1, 0 )
+		self.sensorAngle = 1.600000
 breve.BraitenbergLightSensor = BraitenbergLightSensor
 
 
-class BraitenbergSmellSensor( BraitenbergLightSensor ):
+class BraitenbergSmellSensor( BraitenbergSensor ):
 	def __init__( self ):
 		breve.Link.__init__( self )
 		self.bias = 0
@@ -555,7 +504,7 @@ class BraitenbergSmellSensor( BraitenbergLightSensor ):
 breve.BraitenbergSmellSensor = BraitenbergSmellSensor
 
 
-class BraitenbergSoundSensor( BraitenbergLightSensor ):
+class BraitenbergSoundSensor( BraitenbergSensor ):
 	def __init__( self ):
 		breve.Link.__init__( self )
 		self.bias = 0
@@ -577,7 +526,7 @@ class BraitenbergSoundSensor( BraitenbergLightSensor ):
 breve.BraitenbergSoundSensor = BraitenbergSoundSensor
 
 
-class BraitenbergBlockSensor(BraitenbergLightSensor):
+class BraitenbergBlockSensor(BraitenbergSensor):
 	'''A BraitenbergBlockSensor is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a sensor to the vehicle. <p>'''
 
 	def __init__( self ):
@@ -631,11 +580,7 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 			#if ( self.activationMethod and self.activationObject ):
 			#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
 			self.counter=self.counter+1
-			'''if self.counter == 10:
-				parede = breve.createInstances( breve.Mobile,1)
-				parede.setShape(breve.createInstances(breve.Shape,1).initWithCube(breve.vector( 0.1, 5, 0.2 )))
-				parede.move(self.getLocation()- breve.vector(4,0,1.1))
-				self.counter=0'''
+			
 			strength = self.activationMethod(strength)
 			
 			if ( strength > self.upperBound ):
@@ -653,7 +598,7 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 breve.BraitenbergBlockSensor = BraitenbergBlockSensor
 
 
-class BraitenbergBallSensor( BraitenbergLightSensor ):
+class BraitenbergBallSensor( BraitenbergSensor ):
 	'''A BraitenbergBallSensor is used in conjunction with OBJECT(BraitenbergVehicle) to build Braitenberg vehicles.  This class is typically not instantiated manually, since OBJECT(BraitenbergVehicle) creates one for you when you add a sensor to the vehicle. <p>'''
 	def __init__( self ):
 		breve.Link.__init__( self )
