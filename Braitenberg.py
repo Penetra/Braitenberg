@@ -424,6 +424,8 @@ class BraitenbergLightSensor( breve.Link ):
 		self.desvioPadrao = 0.13 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
+		self.position = breve.vector()
+		self.leftSensor = 0 #default
 		BraitenbergLightSensor.init( self )
 
 	def init( self ):
@@ -465,6 +467,9 @@ class BraitenbergLightSensor( breve.Link ):
 	def setGauss(self, mean, stdev):
 		self.average = mean
 		self.desvioPadrao = stdev
+		
+	def setLeftSensor( self, left):
+		self.leftSensor = left
 	
 	def iterate( self ):
 		i = None
@@ -508,6 +513,12 @@ class BraitenbergLightSensor( breve.Link ):
 			total = ( total / lights )
 		
 		total = ( ( 50 * total ) * self.bias )
+		if self.leftSensor == 1:
+			if breve.length(self.getLocation() - self.position) < 0.001:
+				total = 30
+			
+		self.position = self.getLocation()
+		
 		self.wheels.activate( total )
 
 	def link( self, w ):
@@ -547,6 +558,8 @@ class BraitenbergSmellSensor( BraitenbergLightSensor ):
 		self.desvioPadrao = 0.15 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
+		self.position = breve.vector()
+		self.leftSensor = 1 #default
 		BraitenbergSmellSensor.init( self )
 	def init( self ):
 		self.bias = 1.000000
@@ -569,6 +582,8 @@ class BraitenbergSoundSensor( BraitenbergLightSensor ):
 		self.desvioPadrao = 0.15 #default
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
+		self.position = breve.vector()
+		self.leftSensor = 1 #default
 		BraitenbergSoundSensor.init( self )
 	def init( self ):
 		self.bias = 1.000000
@@ -594,6 +609,8 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 		self.lowerX = 0.0 #default
 		self.upperX = () #default
 		self.counter = 0 #default
+		self.position = breve.vector()
+		self.leftSensor = 1 #default
 		BraitenbergBlockSensor.init( self )
 
 	def init( self ):
@@ -644,11 +661,11 @@ class BraitenbergBlockSensor(BraitenbergLightSensor):
 				strength = self.lowerBound
 			#total = ( total + least )
 
-
 		#if ( lights != 0 ):
 			#total = ( total / lights )
 		total = strength
-		total = ( ( 50 * total ) * self.bias )
+		total = ( ( 50 * total ) * self.bias )		
+		
 		self.wheels.activate( total )
 breve.BraitenbergBlockSensor = BraitenbergBlockSensor
 
