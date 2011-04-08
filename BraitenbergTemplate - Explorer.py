@@ -63,14 +63,12 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 			#WEST
 			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10+i*3,0,-30))
 			#NORTH
-			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(10,0,-30+i*3))
+			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(50,0,-30+i*3))
 			#EAST
 			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10+i*3,0,28))
 			#SOUTH
 			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10,0,-30+i*3))
 
-		
-		
 		breve.myBraitenbergControl = myBraitenbergControl
 
 
