@@ -5,6 +5,7 @@
 
 
 import breve
+from random import random
 
 class myBraitenbergControl( breve.BraitenbergControl ):
 	def __init__( self ):
@@ -19,6 +20,7 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 
 	def init( self ):
 		self.vehicle = breve.createInstances( breve.BraitenbergVehicle, 1 )
+		self.vehicle.move(breve.vector(10,0,10))
 		self.watch( self.vehicle )
 
 
@@ -36,24 +38,30 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 
 		leftLightSensor = self.vehicle.addSensor(breve.vector(2.2, 0.1, -1.4),breve.vector( 0, 0, 1 ),1,"Lights")
 		rightLightSensor = self.vehicle.addSensor(breve.vector(2.2, 0.1, 1.4),breve.vector( 0, 0, 1 ),1,"Lights")
-		leftLightSensor.link(front_right)
-		rightLightSensor.link(front_left)
+		leftLightSensor.link(front_left)
+		rightLightSensor.link(front_right)
+		#leftLightSensor.setBias(-0.2)
+		#rightLightSensor.setBias(-0.2)
+		#leftLightSensor.setLeftSensor(1)
 		
-		rightSmellSensor = self.vehicle.addSensor(breve.vector(2.2, 0.1, 1.4),breve.vector( 0, 0, 1 ),1,"Smells")
 		leftSmellSensor = self.vehicle.addSensor(breve.vector(2.2, 0.1, -1.4),breve.vector( 0, 0, 1 ),1,"Smells")
-		rightSmellSensor.link(front_left)
-		leftSmellSensor.link(front_right)
+		rightSmellSensor = self.vehicle.addSensor(breve.vector(2.2, 0.1, 1.4),breve.vector( 0, 0, 1 ),1,"Smells")
+		leftSmellSensor.link(front_left)
+		rightSmellSensor.link(front_right)
+		
+		#leftSmellSensor.setBias(-0.2)
+		#rightSmellSensor.setBias(-0.2)
+		#leftSmellSensor.setLeftSensor(1)
 		
 		leftSensor = self.vehicle.addSensor(breve.vector( 2.2, 0.1, -1.4 ),breve.vector( 0, 0, 1 ),1,"Blocks")
 		rightSensor = self.vehicle.addSensor(breve.vector( 2.2, 0.1, 1.4 ),breve.vector( 0, 0, 1 ),1,"Blocks")
-		leftSensor.link(front_right)
-		rightSensor.link(front_left)
-		leftSensor.setLeftSensor(1)
-		leftSensor.setBias(-0.2)
-		rightSensor.setBias(-0.2)
+		leftSensor.link(front_left)
+		rightSensor.link(front_right)
+		#leftSensor.setBias(-0.2)
+		#rightSensor.setBias(-0.2)
 		
-		front_left.setNaturalVelocity(2.0)
-		front_right.setNaturalVelocity(2.0)
+		front_left.setNaturalVelocity(1.2)
+		front_right.setNaturalVelocity(1.2)
 		
 		
 		
@@ -61,13 +69,28 @@ class myBraitenbergControl( breve.BraitenbergControl ):
 		
 		for i in range(20):
 			#WEST
-			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10+i*3,0,-30))
+			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(i*3,0,0))
 			#NORTH
-			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(50,0,-30+i*3))
+			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(60,0,i*3))
 			#EAST
-			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10+i*3,0,28))
+			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(i*3,0,58))
 			#SOUTH
-			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(-10,0,-30+i*3))
+			breve.createInstances( breve.BraitenbergSound,1).move(breve.vector(0,0,i*3))
+			
+		
+		for i in range(5):
+			x = random() * 58
+			y = random() * 58
+			breve.createInstances(breve.BraitenbergLight,1).move(breve.vector(x,0,y))
+		for i in range(5):
+			x = random() * 58
+			y = random() * 58
+			breve.createInstances(breve.BraitenbergSmell,1).move(breve.vector(x,0,y))	
+		for i in range(5):
+			x = random() * 58
+			y = random() * 58
+			breve.createInstances(breve.BraitenbergBlock,1).move(breve.vector(x,0,y))
+			
 
 		breve.myBraitenbergControl = myBraitenbergControl
 
