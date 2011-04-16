@@ -354,7 +354,7 @@ class BraitenbergSensor( breve.Link ):
 		self.upperX = () #default
 		self.position = breve.vector()
 		self.leftSensor = 0 #default
-		BraitenbergLightSensor.init( self )
+		BraitenbergSensor.init( self )
 
 	def init( self ):
 		self.bias = 1.000000 
@@ -401,19 +401,18 @@ class BraitenbergSensor( breve.Link ):
 	
 	def iterate( self ):
 		i = None
-		lights = 0
+		objects = 0
 		angle = 0
 		strength = 0
 		total = 0
 		transDir = breve.vector()
-		toLight = breve.vector()
+		toObject = breve.vector()
 
 		transDir = ( self.getRotation() * self.direction )
 		for i in breve.allInstances( self.type ):
-			toLight = ( i.getLocation() - self.getLocation() )
+			toObject = ( i.getLocation() - self.getLocation() )
 			
-
-			angle = breve.breveInternalFunctionFinder.angle( self, toLight, transDir )
+			angle = breve.breveInternalFunctionFinder.angle( self, toObject, transDir )
 			if ( angle < self.sensorAngle ):
 				strength = breve.length( ( self.getLocation() - i.getLocation() ) ) 
 
@@ -421,11 +420,7 @@ class BraitenbergSensor( breve.Link ):
 					continue
 				
 				strength = ( 1.000000 / ( strength * strength ) ) * i.intensity
-				#if ( self.activationMethod and self.activationObject ):
-				#	strength = self.activationObject.callMethod( self.activationMethod, [ strength ] )
-				#print "strength: %f " %(strength)
 				strength = self.activationMethod(strength)
-				#print strength
 
 				if strength > self.upperBound:
 					strength = self.upperBound
@@ -434,11 +429,11 @@ class BraitenbergSensor( breve.Link ):
 				
 					
 				total = ( total + strength )
-				lights = ( lights + 1 )
+				objects += 1
 
 
-		if ( lights != 0 ):
-			total = ( total / lights )
+		if ( objects != 0 ):
+			total = ( total / objects )
 		
 		total = ( ( 50 * total ) * self.bias )
 		if self.leftSensor == 1:
